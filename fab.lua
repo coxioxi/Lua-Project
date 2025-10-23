@@ -1,41 +1,34 @@
 local file = io.open("input.txt", "r")
+if not file then error("Cannot open input.txt") end
 
--- Transform the input file into a 2D array of strings
-local words = {}
-
-for line in file:lines() do
-    for i = 1, #line do
-        local ch = string.sub(line, i, i)
-        if(ch == "<" or ch == ">" or ch == "=") then
-            table.insert(words, ch) -- Add the <, > or = to the table
-        end
-    end
-end    
-
--- Read lines until a line starting with "*" (EOF) is found
+-- Read lines until a line starting with "*" is found
 local lines = {}
 for line in file:lines() do
     if line:sub(1,1) == "*" then break end
     table.insert(lines, line)
 end
+file:close()
 
--- Loop through each line in lines array
 local i = 1
 while i <= #lines do
-    -- Line with the alignmrnt information
+    -- Alignment line
     local align = lines[i]
-
-    -- Get the number of cols from align
     local nCols = #align
+    i = i + 1
 
-    -- Read a block of text until we get to the next align info
+    -- Read all lines until next alignment line or end
     local table_lines = {}
     while i <= #lines and not lines[i]:match("^[<>=]+$") do
         table.insert(table_lines, lines[i])
         i = i + 1
     end
 
-    -- Split data lines into entries for each column
+    -- Skip empty blocks
+    if #table_lines == 0 then
+        goto continue
+    end
+
+    -- Split lines into columns
     local data = {}
     for _, line in ipairs(table_lines) do
         local row = {}
@@ -45,34 +38,73 @@ while i <= #lines do
         table.insert(data, row)
     end
 
-    -- Find the maximum width for each column
+    -- Compute max widths per column
     local widths = {}
     for col = 1, nCols do
         local maxWidth = 0
         for _, row in ipairs(data) do
-            if #row[c] > maxWidth then maxWidth = #row[c] end
+            if row[col] and #row[col] > maxWidth then
+                maxWidth = #row[col]
+            end
         end
-
         widths[col] = maxWidth
     end
 
-    -- Calculate the total width of the table
+    -- Compute total table width
     local total_width = 1
-    for col = 1, nCols do total_width = total_width + widths[col] + 3 end
-    total_width = total width + 1
+    for col = 1, nCols do
+        total_width = total_width + widths[col] + 3
+    end
+    total_width = total_width + 1
 
-    -- Print the top border
-    local top_and_bottom = "@" .. string.rep("-", total_width - 2) .. "@"
+    local top_bottom = "@" .. string.rep("-", total_width - 2) .. "@"
 
-    -- Print separators between cols
+    -- Separator line between header and body
     local sep = "|"
     for col = 1, nCols do
-        sep = sep .. string.rep("-", widths[col] + 2) 
-        if c == nCols then
+        sep = sep .. string.rep("-", widths[col]+2)
+        if col == nCols then
             sep = sep .. "|"
         else
             sep = sep .. "+"
         end
     end
-end
 
+    -- Helper function to align text
+    local function align_text(text, width, align_type)
+        if align_type == "<" then
+            return text .. string.rep(" ", width - #text)
+        elseif align_type == ">" then
+            return string.rep(" ", width - #text) .. text
+        else -- "=" center
+            local left_padding = math.floor((width - #text) / 2)
+            local right_padding = width - #text - left_padding
+            return string.rep(" ", left_padding) .. text .. string.rep(" ", right_padding)
+        end
+    end
+
+    -- Print table
+    print(top_bottom)
+
+    -- Header row
+    local header = "|"
+    for col = 1, nCols do
+        header = header .. " " .. align_text(data[1][col], widths[col], align:sub(col,col)) .. " |"
+    end
+    print(header)
+
+    print(sep)
+
+    -- Body rows
+    for row = 2, #data do
+        local row_str = "|"
+        for col = 1, nCols do
+            row_str = row_str .. " " .. align_text(data[row][col], widths[col], align:sub(col,col)) .. " |"
+        end
+        print(row_str)
+    end
+
+    print(top_bottom)
+
+    ::continue::
+end
