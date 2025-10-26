@@ -1,7 +1,7 @@
 local file = io.open("input.txt", "r")
 if not file then error("Cannot open input.txt") end
 
--- Read lines until a line starting with "*" is found
+-- Read lines until EOF "*" is found
 local lines = {}
 for line in file:lines() do
     if line:sub(1,1) == "*" then break end
@@ -21,11 +21,6 @@ while i <= #lines do
     while i <= #lines and not lines[i]:match("^[<>=]+$") do
         table.insert(table_lines, lines[i])
         i = i + 1
-    end
-
-    -- Skip empty blocks
-    if #table_lines == 0 then
-        goto continue
     end
 
     -- Split lines into columns
@@ -57,7 +52,7 @@ while i <= #lines do
     end
     total_width = total_width + 1
 
-    local top_bottom = "@" .. string.rep("-", total_width - 2) .. "@"
+    local top_bottom = "@" .. string.rep("-", total_width - 3) .. "@"
 
     -- Separator line between header and body
     local sep = "|"
@@ -105,6 +100,4 @@ while i <= #lines do
     end
 
     print(top_bottom)
-
-    ::continue::
 end
