@@ -1,13 +1,9 @@
-local file = io.open("input.txt", "r")
-if not file then error("Cannot open input.txt") end
-
 -- Read lines until EOF "*" is found
 local lines = {}
-for line in file:lines() do
+for line in io.lines() do
     if line:sub(1,1) == "*" then break end
     table.insert(lines, line)
 end
-file:close()
 
 local i = 1
 while i <= #lines do
@@ -79,16 +75,16 @@ while i <= #lines do
     end
 
     -- Print table
-    print(top_bottom)
+    io.write(top_bottom, "\n")
 
     -- Header row
     local header = "|"
     for col = 1, nCols do
         header = header .. " " .. align_text(data[1][col], widths[col], align:sub(col,col)) .. " |"
     end
-    print(header)
+    io.write(header, "\n")
 
-    print(sep)
+    io.write(sep, "\n")
 
     -- Body rows
     for row = 2, #data do
@@ -96,8 +92,8 @@ while i <= #lines do
         for col = 1, nCols do
             row_str = row_str .. " " .. align_text(data[row][col], widths[col], align:sub(col,col)) .. " |"
         end
-        print(row_str)
+        io.write(row_str, "\n")
     end
 
-    print(top_bottom)
+    io.write(top_bottom, (i <= #lines) and "\n" or "")
 end
