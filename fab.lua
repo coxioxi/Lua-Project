@@ -1,9 +1,30 @@
--- Read lines until EOF "*" is found
+local file = io.open("input.txt", "r")
+if not file then error("Cannot open input.txt") end
+
+-- Transform the input file into a 2D array of strings
+local words = {}
+
+for line in file:lines() do
+    for i = 1, #line do
+        local ch = string.sub(line, i, i)
+        if(ch == "<" or ch == ">" or ch == "=") then
+            table.insert(words, ch) -- Add the <, > or = to the table
+        end
+    end
+end    
+
+-- Reset file position so we can read from the start again
+file:seek("set", 0)
+
+-- Read lines until a line starting with "*" (EOF) is found
 local lines = {}
-for line in io.lines() do
+for line in file:lines() do
     if line:sub(1,1) == "*" then break end
     table.insert(lines, line)
 end
+file:close()
+
+ local output = io.open("output.txt", "w")
 
 local i = 1
 while i <= #lines do
@@ -75,16 +96,16 @@ while i <= #lines do
     end
 
     -- Print table
-    io.write(top_bottom, "\n")
+    output:write(top_bottom, "\n")
 
     -- Header row
     local header = "|"
     for col = 1, nCols do
         header = header .. " " .. align_text(data[1][col], widths[col], align:sub(col,col)) .. " |"
     end
-    io.write(header, "\n")
+    output:write(header, "\n")
 
-    io.write(sep, "\n")
+    output:write(sep, "\n")
 
     -- Body rows
     for row = 2, #data do
@@ -92,8 +113,10 @@ while i <= #lines do
         for col = 1, nCols do
             row_str = row_str .. " " .. align_text(data[row][col], widths[col], align:sub(col,col)) .. " |"
         end
-        io.write(row_str, "\n")
+        output:write(row_str, "\n")
     end
 
-    io.write(top_bottom, (i <= #lines) and "\n" or "")
+    output:write(top_bottom, (i < #lines) and "\n" or "")
 end
+
+output:close()
