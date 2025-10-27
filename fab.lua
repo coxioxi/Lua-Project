@@ -24,7 +24,8 @@ for line in file:lines() do
 end
 file:close()
 
- local output = io.open("output.txt", "w")
+local output = io.open("output.txt", "w")
+if not output then error("Cannot open output.txt") end
 
 local i = 1
 while i <= #lines do
